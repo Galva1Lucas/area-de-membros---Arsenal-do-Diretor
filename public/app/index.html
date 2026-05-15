@@ -1,0 +1,295 @@
+<!--
+  ============================================================
+  DINÂMICAS DE TEATRO — Área de Membros Premium
+  ============================================================
+  Estrutura de pastas sugerida:
+    /public/app/
+      ├── index.html         (este arquivo)
+      ├── style.css          (estilos)
+      ├── script.js          (lógica)
+      ├── videos/            (coloque aqui seus .mp4)
+      ├── thumbs/            (capas dos vídeos .jpg/.webp)
+      └── pdfs/              (materiais .pdf)
+
+  COMO ADICIONAR NOVAS AULAS / MÓDULOS / PDFs:
+    Edite os arrays MODULES, LESSONS e PDFS em script.js.
+    Para usar Vimeo/Wistia: troque o <video> por um <iframe>
+    e ajuste a função openLesson() em script.js.
+
+  INTEGRAÇÃO BACKEND FUTURA:
+    Substitua as chamadas localStorage.* por fetch() para
+    sua API REST (ex.: /api/progress, /api/auth).
+  ============================================================
+-->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Dinâmicas de Teatro — Área de Membros</title>
+  <meta name="description" content="Plataforma premium de estudos para professores de teatro, atores e alunos." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- ============== LOADER GLOBAL ============== -->
+<div id="globalLoader" class="global-loader">
+  <div class="spotlight"></div>
+  <div class="loader-mask">DT</div>
+</div>
+
+<!-- ============== TELA DE LOGIN ============== -->
+<section id="loginScreen" class="login-screen">
+  <div class="login-bg"></div>
+  <div class="login-card glass">
+    <div class="brand">
+      <div class="brand-logo">
+        <svg viewBox="0 0 64 64" width="48" height="48" aria-hidden="true">
+          <defs>
+            <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0" stop-color="#F5A623"/>
+              <stop offset="1" stop-color="#B8860B"/>
+            </linearGradient>
+          </defs>
+          <path fill="url(#g1)" d="M14 10c8 6 28 6 36 0v18c0 14-9 24-18 26-9-2-18-12-18-26V10z"/>
+          <circle cx="24" cy="26" r="3" fill="#0b0b0d"/>
+          <circle cx="40" cy="26" r="3" fill="#0b0b0d"/>
+          <path d="M22 38c4 4 16 4 20 0" stroke="#0b0b0d" stroke-width="3" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h1 class="brand-title">Dinâmicas de Teatro</h1>
+      <p class="brand-sub">Área de Membros Premium</p>
+    </div>
+
+    <form id="loginForm" class="login-form" novalidate>
+      <label class="field">
+        <span>E-mail</span>
+        <input type="email" id="email" required placeholder="voce@email.com" autocomplete="email" />
+      </label>
+      <label class="field">
+        <span>Senha</span>
+        <input type="password" id="password" required placeholder="••••••••" autocomplete="current-password" />
+      </label>
+      <button type="submit" class="btn btn-gold">Entrar na plataforma</button>
+      <p class="login-hint">Acesso vitalício • Conteúdo atualizado mensalmente</p>
+    </form>
+  </div>
+</section>
+
+<!-- ============== APP PRINCIPAL ============== -->
+<div id="app" class="app hidden">
+
+  <!-- Sidebar -->
+  <aside id="sidebar" class="sidebar">
+    <div class="sidebar-brand">
+      <span class="logo-dot"></span>
+      <span>Dinâmicas <em>de Teatro</em></span>
+    </div>
+    <nav class="side-nav">
+      <a href="#" data-view="home" class="active"><i data-i="home"></i> Início</a>
+      <a href="#" data-view="modules"><i data-i="grid"></i> Módulos</a>
+      <a href="#" data-view="continue"><i data-i="play"></i> Continuar</a>
+      <a href="#" data-view="pdfs"><i data-i="file"></i> Biblioteca PDF</a>
+      <a href="#" data-view="favorites"><i data-i="star"></i> Favoritos</a>
+      <a href="#" data-view="achievements"><i data-i="trophy"></i> Conquistas</a>
+      <a href="#" data-view="ai"><i data-i="spark"></i> Assistente IA</a>
+      <a href="#" data-view="certificate"><i data-i="medal"></i> Certificado</a>
+    </nav>
+    <div class="side-progress">
+      <div class="sp-label">Progresso geral</div>
+      <div class="sp-bar"><div id="sideProgressFill" class="sp-fill"></div></div>
+      <div class="sp-num"><span id="sideProgressNum">0</span>%</div>
+    </div>
+    <button id="logoutBtn" class="btn btn-ghost btn-block">Sair</button>
+  </aside>
+
+  <!-- Topbar mobile -->
+  <header class="topbar">
+    <button id="menuBtn" class="icon-btn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="topbar-brand">Dinâmicas <em>de Teatro</em></div>
+    <div class="search-wrap">
+      <input id="searchInput" type="search" placeholder="Buscar aulas, PDFs, módulos..." />
+    </div>
+    <div class="user-chip">
+      <div class="avatar">A</div>
+    </div>
+  </header>
+
+  <!-- Conteúdo -->
+  <main id="content" class="content">
+
+    <!-- HOME -->
+    <section data-view-section="home" class="view active">
+      <div class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+          <span class="hero-eyebrow">Bem-vindo de volta</span>
+          <h1 class="hero-title">A arte do palco<br/><span class="gold">começa aqui.</span></h1>
+          <p class="hero-text">Mais de 80 dinâmicas, exercícios e aulas em vídeo para transformar sua sala de aula em um verdadeiro estúdio teatral.</p>
+          <div class="hero-actions">
+            <button class="btn btn-gold" data-action="continue-watching">▶ Continuar assistindo</button>
+            <button class="btn btn-outline" data-view-go="modules">Ver módulos</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat glass"><div class="stat-num" id="statLessons">0</div><div class="stat-label">Dinâmicas</div></div>
+        <div class="stat glass"><div class="stat-num">3</div><div class="stat-label">Níveis</div></div>
+        <div class="stat glass"><div class="stat-num">24h</div><div class="stat-label">Suporte IA</div></div>
+        <div class="stat glass"><div class="stat-num" id="statProgress">0%</div><div class="stat-label">Concluído</div></div>
+      </div>
+
+      <div class="section-head">
+        <h2>Continue assistindo</h2>
+        <a href="#" data-view-go="continue">Ver tudo →</a>
+      </div>
+      <div id="continueRow" class="row-cards"></div>
+
+      <div class="section-head">
+        <h2>Seus módulos</h2>
+        <a href="#" data-view-go="modules">Ver tudo →</a>
+      </div>
+      <div id="modulesPreview" class="modules-grid"></div>
+
+      <div class="section-head"><h2>Níveis de domínio</h2></div>
+      <div class="levels">
+        <div class="level glass" data-level="1">
+          <div class="level-banner l1"></div>
+          <h3>Nível 1 — Fundamentos</h3>
+          <p>Aquecimento, presença e jogos teatrais.</p>
+          <div class="mini-bar"><div class="mini-fill" data-level-fill="1"></div></div>
+        </div>
+        <div class="level glass" data-level="2">
+          <div class="level-banner l2"></div>
+          <h3>Nível 2 — Interpretação</h3>
+          <p>Construção de personagem e cena.</p>
+          <div class="mini-bar"><div class="mini-fill" data-level-fill="2"></div></div>
+        </div>
+        <div class="level glass premium" data-level="3">
+          <div class="level-banner l3"></div>
+          <span class="badge-premium">PREMIUM</span>
+          <h3>Nível 3 — Performance</h3>
+          <p>Espetáculo, direção e palco profissional.</p>
+          <div class="mini-bar"><div class="mini-fill" data-level-fill="3"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MÓDULOS -->
+    <section data-view-section="modules" class="view">
+      <div class="view-head">
+        <h1>Módulos</h1>
+        <div class="filters" id="moduleFilters">
+          <button class="chip active" data-filter="all">Todos</button>
+          <button class="chip" data-filter="1">Nível 1</button>
+          <button class="chip" data-filter="2">Nível 2</button>
+          <button class="chip" data-filter="3">Nível 3</button>
+        </div>
+      </div>
+      <div id="modulesGrid" class="modules-grid"></div>
+    </section>
+
+    <!-- CONTINUAR -->
+    <section data-view-section="continue" class="view">
+      <div class="view-head"><h1>Continue assistindo</h1></div>
+      <div id="continueGrid" class="lessons-grid"></div>
+    </section>
+
+    <!-- PDFs -->
+    <section data-view-section="pdfs" class="view">
+      <div class="view-head">
+        <h1>Biblioteca de PDFs</h1>
+        <div class="filters" id="pdfFilters">
+          <button class="chip active" data-pdf-filter="all">Todos</button>
+          <button class="chip" data-pdf-filter="dinamicas">Dinâmicas</button>
+          <button class="chip" data-pdf-filter="planos">Planos de aula</button>
+          <button class="chip" data-pdf-filter="textos">Textos teatrais</button>
+        </div>
+      </div>
+      <div id="pdfsGrid" class="pdfs-grid"></div>
+    </section>
+
+    <!-- FAVORITOS -->
+    <section data-view-section="favorites" class="view">
+      <div class="view-head"><h1>Favoritos</h1></div>
+      <div id="favoritesGrid" class="lessons-grid"></div>
+    </section>
+
+    <!-- CONQUISTAS -->
+    <section data-view-section="achievements" class="view">
+      <div class="view-head"><h1>Conquistas</h1></div>
+      <div id="achievementsGrid" class="achievements-grid"></div>
+    </section>
+
+    <!-- ASSISTENTE IA -->
+    <section data-view-section="ai" class="view">
+      <div class="ai-card glass">
+        <div class="ai-orb"></div>
+        <div>
+          <span class="badge-premium">PREMIUM</span>
+          <h1>Assistente Digital 24h</h1>
+          <p>Tire dúvidas, gere ideias de dinâmicas e roteiros, peça sugestões de aquecimento — disponível a qualquer hora.</p>
+          <button class="btn btn-gold" id="aiStartBtn">▶ Iniciar assistência</button>
+        </div>
+      </div>
+      <div id="aiChat" class="ai-chat hidden">
+        <div id="aiMessages" class="ai-messages"></div>
+        <form id="aiForm" class="ai-form">
+          <input id="aiInput" type="text" placeholder="Pergunte algo ao assistente..." />
+          <button class="btn btn-gold">Enviar</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- CERTIFICADO -->
+    <section data-view-section="certificate" class="view">
+      <div class="cert glass">
+        <h1>Seu Certificado</h1>
+        <p>Conclua 100% das aulas para liberar o certificado oficial.</p>
+        <div class="cert-progress"><div id="certFill"></div></div>
+        <p id="certStatus" class="cert-status">0% concluído</p>
+        <button id="certBtn" class="btn btn-gold" disabled>Emitir Certificado</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ============== PLAYER MODAL ============== -->
+<div id="playerModal" class="player-modal hidden">
+  <div class="player-backdrop" data-close-player></div>
+  <div class="player-shell">
+    <button class="player-close" data-close-player aria-label="Fechar">×</button>
+    <!--
+      Para usar Vimeo/Wistia: substitua o <video> por:
+      <iframe src="https://player.vimeo.com/video/SEU_ID" allow="autoplay; fullscreen" allowfullscreen></iframe>
+    -->
+    <video id="lessonVideo" controls playsinline preload="metadata"></video>
+    <div class="player-info">
+      <div>
+        <span id="lessonModule" class="player-eyebrow"></span>
+        <h2 id="lessonTitle">Aula</h2>
+        <p id="lessonDesc" class="player-desc"></p>
+      </div>
+      <div class="player-actions">
+        <button id="favBtn" class="btn btn-ghost">☆ Favoritar</button>
+        <button id="doneBtn" class="btn btn-outline">✓ Marcar concluída</button>
+        <button id="prevBtn" class="btn btn-ghost">← Anterior</button>
+        <button id="nextBtn" class="btn btn-gold">Próxima →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============== TOAST ============== -->
+<div id="toast" class="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
