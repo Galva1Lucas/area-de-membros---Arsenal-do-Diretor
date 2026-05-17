@@ -274,11 +274,17 @@ function initApp(){
   const user = localStorage.getItem(STORAGE.user);
   if(user){ showApp(); } else { showLogin(); }
 
+  // ===== ACESSO LIBERADO (credenciais fixas do produto) =====
+  const ACCESS_EMAIL = 'acessoimediato@outlook.com';
+  const ACCESS_PASS  = '@2026';
   document.getElementById('loginForm').addEventListener('submit', e=>{
     e.preventDefault();
-    const email = document.getElementById('email').value.trim();
-    const pass  = document.getElementById('password').value.trim();
+    const email = document.getElementById('email').value.trim().toLowerCase();
+    const pass  = document.getElementById('password').value;
     if(!email || !pass) return toast('Preencha e-mail e senha');
+    if(email !== ACCESS_EMAIL.toLowerCase() || pass !== ACCESS_PASS){
+      return toast('Credenciais inválidas. Verifique o e-mail e a senha de acesso.');
+    }
     localStorage.setItem(STORAGE.user, JSON.stringify({email}));
     toast('Bem-vindo(a) ao Arsenal!');
     showApp();
@@ -514,17 +520,19 @@ function renderArsenal(filter){
   const wrap = document.getElementById('arsenalGrid');
   const list = filter==='all' ? ARSENAL : ARSENAL.filter(p=>p.cat===filter);
   wrap.innerHTML = list.map(p=>`
-    <article class="arsenal-card">
-      <div class="arsenal-cover">
+    <article class="arsenal-card ${p.bonus?'is-bonus':''}">
+      <div class="arsenal-cover ${p.bonus?'cover-bonus':''}">
         <span class="arsenal-tag">${p.tag}</span>
+        ${p.bonus?'<span class="bonus-ribbon">★ BÔNUS EXCLUSIVO</span>':''}
       </div>
       <div class="arsenal-meta">
         ${p.premium?'<span class="badge-premium">AVANÇADO</span>':''}
+        ${p.bonus?'<span class="badge-bonus">CONTEÚDO BÔNUS</span>':''}
         <h3>${p.title}</h3>
         <p>${p.desc}</p>
         <div class="arsenal-actions">
           <button class="btn btn-outline" data-ars-open="${p.id}">Abrir</button>
-          <button class="btn btn-gold" data-ars-access="${p.id}">Acessar Material</button>
+          <button class="btn btn-gold" data-ars-access="${p.id}">${p.bonus?'Acessar Bônus':'Acessar Material'}</button>
         </div>
       </div>
     </article>`).join('');
