@@ -290,12 +290,14 @@ function initApp(){
     showApp();
   });
 
-  document.getElementById('logoutBtn').addEventListener('click', ()=>{
+  const doLogout = ()=>{
     localStorage.removeItem(STORAGE.user);
     location.reload();
-  });
+  };
+  document.getElementById('logoutBtn').addEventListener('click', doLogout);
+  document.getElementById('logoutBtnMobile')?.addEventListener('click', doLogout);
 
-  document.querySelectorAll('[data-view]').forEach(el=>{
+  document.querySelectorAll('[data-view], .mobile-nav-item[data-view]').forEach(el=>{
     el.addEventListener('click', e=>{ e.preventDefault(); switchView(el.dataset.view); closeSidebar(); });
   });
   document.querySelectorAll('[data-view-go]').forEach(el=>{
@@ -304,9 +306,23 @@ function initApp(){
 
   document.getElementById('menuBtn').addEventListener('click', toggleSidebar);
 
+  const searchWrap = document.getElementById('searchWrap');
+  document.getElementById('searchToggle')?.addEventListener('click', ()=>{
+    searchWrap?.classList.toggle('open');
+    if(searchWrap?.classList.contains('open')) document.getElementById('searchInput')?.focus();
+  });
   document.getElementById('searchInput').addEventListener('input', e=>{
     filterDynamicsBySearch(e.target.value.toLowerCase());
+    if(e.target.value.trim()) switchView('dynamics');
   });
+
+  const topbar = document.getElementById('topbar');
+  document.getElementById('content')?.addEventListener('scroll', ()=>{
+    topbar?.classList.toggle('scrolled', (document.getElementById('content')?.scrollTop || window.scrollY) > 24);
+  }, { passive:true });
+  window.addEventListener('scroll', ()=>{
+    topbar?.classList.toggle('scrolled', window.scrollY > 24);
+  }, { passive:true });
 
   document.getElementById('moduleFilters').addEventListener('click', e=>{
     if(!e.target.matches('.chip')) return;
@@ -372,6 +388,12 @@ function initApp(){
 }
 
 // ===== VIEWS =====
+const VIEW_TITLES = {
+  home:'Início', modules:'Trilha', dynamics:'Explorar', arsenal:'Arsenal',
+  favorites:'Salvos', profile:'Perfil', achievements:'Conquistas',
+  ai:'Assistente', videos:'Vídeos', certificate:'Certificação'
+};
+
 function showLogin(){
   document.getElementById('loginScreen').classList.remove('hidden');
   document.getElementById('app').classList.add('hidden');
@@ -382,15 +404,20 @@ function showApp(){
 }
 function switchView(name){
   closeSidebar();
+  document.getElementById('searchWrap')?.classList.remove('open');
   document.querySelectorAll('[data-view-section]').forEach(s=>s.classList.remove('active'));
   const target = document.querySelector(`[data-view-section="${name}"]`);
   if(target) target.classList.add('active');
   document.querySelectorAll('.side-nav a').forEach(a=>a.classList.toggle('active', a.dataset.view===name));
+  document.querySelectorAll('.mobile-nav-item').forEach(a=>a.classList.toggle('active', a.dataset.view===name));
+  const titleEl = document.getElementById('topbarTitle');
+  if(titleEl) titleEl.textContent = VIEW_TITLES[name] || 'Arsenal';
   window.scrollTo({top:0,behavior:'smooth'});
   if(name==='favorites') renderFavorites();
   if(name==='dynamics') renderDynamics('all');
   if(name==='achievements') renderAchievements();
   if(name==='certificate') renderCertificate();
+  if(name==='profile') updateProfileProgress();
 }
 function toggleSidebar(){
   const sb = document.getElementById('sidebar');
@@ -432,7 +459,7 @@ function dynCard(d){
   const m = MODULES.find(x=>x.id===d.moduleId);
   const done = progress.done.includes(d.id);
   return `
-    <article class="lesson-card dyn-card" data-dyn="${d.id}">
+    <article class="lesson-card dyn-card nf-poster" data-dyn="${d.id}">
       <div class="lesson-thumb dyn-thumb" style="background:linear-gradient(135deg,${m?.color || '#333'},#0a0a0c)">
         <span class="dyn-cat-tag">${labelCat(d.category)}</span>
         ${done?'<div class="check">✓</div>':''}
@@ -471,7 +498,7 @@ function renderContinueRow(){
 
 function renderModulesPreview(){
   const wrap = document.getElementById('modulesPreview');
-  wrap.innerHTML = MODULES.slice(0,3).map(moduleCard).join('');
+  wrap.innerHTML = MODULES.slice(0,3).map(m=>moduleCard(m, true)).join('');
   bindModuleClicks(wrap);
 }
 function renderModules(filter){
@@ -480,12 +507,12 @@ function renderModules(filter){
   wrap.innerHTML = list.map(moduleCard).join('');
   bindModuleClicks(wrap);
 }
-function moduleCard(m){
+function moduleCard(m, poster=false){
   const dyns = DYNAMICS.filter(l=>l.moduleId===m.id);
   const done = dyns.filter(l=>progress.done.includes(l.id)).length;
   const pct = dyns.length ? Math.round((done/dyns.length)*100) : 0;
   return `
-    <article class="module-card" data-module="${m.id}">
+    <article class="module-card ${poster?'nf-poster':''}" data-module="${m.id}">
       <div class="module-cover" style="background:linear-gradient(135deg,${m.color},#0a0a0c)">
         ${m.title.split(' ')[0]}
       </div>
@@ -529,7 +556,7 @@ function renderArsenal(filter){
   const wrap = document.getElementById('arsenalGrid');
   const list = filter==='all' ? ARSENAL : ARSENAL.filter(p=>p.cat===filter);
   wrap.innerHTML = list.map(p=>`
-    <article class="arsenal-card ${p.bonus?'is-bonus':''}">
+    <article class="arsenal-card nf-poster ${p.bonus?'is-bonus':''}">
       <div class="arsenal-cover ${p.bonus?'cover-bonus':''}">
         <span class="arsenal-tag">${p.tag}</span>
         ${p.bonus?'<span class="bonus-ribbon">★ BÔNUS EXCLUSIVO</span>':''}
@@ -582,6 +609,14 @@ function renderProgressBars(){
   const pct = Math.round((progress.done.length / DYNAMICS.length) * 100);
   document.getElementById('sideProgressFill').style.width = pct+'%';
   document.getElementById('sideProgressNum').textContent = pct;
+  updateProfileProgress();
+}
+function updateProfileProgress(){
+  const pct = Math.round((progress.done.length / DYNAMICS.length) * 100);
+  const num = document.getElementById('profileProgressNum');
+  const fill = document.getElementById('profileProgressFill');
+  if(num) num.textContent = pct + '%';
+  if(fill) fill.style.width = pct + '%';
 }
 
 function renderAchievements(){
