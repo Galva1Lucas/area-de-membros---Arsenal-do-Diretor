@@ -634,3 +634,42 @@ h1,h2,h3,.brand-title,.hero-title{
   .soon-icon{margin:0 auto}
   .method-header,.method-body,.method-actions{padding-left:1.2rem;padding-right:1.2rem}
 }
+
+/* ===== Bônus & badges adicionais ===== */
+.stat-plus{
+  display:inline-block;margin-left:.35rem;padding:.05rem .45rem;
+  font-size:.7rem;font-weight:700;letter-spacing:.05em;
+  color:#0a0a0a;background:linear-gradient(135deg,#f5d27a,#c9a14a);
+  border-radius:999px;vertical-align:middle;
+}
+.chip-bonus{
+  border-color:rgba(245,166,35,.55)!important;
+  color:#f5d27a!important;
+}
+.chip-bonus.active,
+.chip-bonus:hover{
+  background:linear-gradient(135deg,#f5d27a,#c9a14a)!important;
+  color:#1a1208!important;border-color:transparent!important;
+}
+.arsenal-card.is-bonus{
+  border:1px solid rgba(245,166,35,.45);
+  box-shadow:0 0 0 1px rgba(245,166,35,.15),0 18px 50px -22px rgba(245,166,35,.45);
+}
+.cover-bonus{
+  background:
+    radial-gradient(120% 80% at 0% 0%,rgba(245,210,122,.35),transparent 55%),
+    linear-gradient(135deg,#3a2a10,#1a1208 70%)!important;
+}
+.bonus-ribbon{
+  position:absolute;bottom:.7rem;right:.7rem;
+  padding:.3rem .65rem;border-radius:999px;
+  font-size:.7rem;font-weight:700;letter-spacing:.08em;
+  background:linear-gradient(135deg,#f5d27a,#c9a14a);color:#1a1208;
+  box-shadow:0 6px 18px -6px rgba(245,166,35,.6);
+}
+.badge-bonus{
+  display:inline-block;margin-bottom:.4rem;padding:.2rem .55rem;
+  font-size:.65rem;font-weight:700;letter-spacing:.1em;
+  background:linear-gradient(135deg,#f5d27a,#c9a14a);color:#1a1208;
+  border-radius:4px;
+}
