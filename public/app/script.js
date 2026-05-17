@@ -274,11 +274,17 @@ function initApp(){
   const user = localStorage.getItem(STORAGE.user);
   if(user){ showApp(); } else { showLogin(); }
 
+  // ===== ACESSO LIBERADO (credenciais fixas do produto) =====
+  const ACCESS_EMAIL = 'acessoimediato@outlook.com';
+  const ACCESS_PASS  = '@2026';
   document.getElementById('loginForm').addEventListener('submit', e=>{
     e.preventDefault();
-    const email = document.getElementById('email').value.trim();
-    const pass  = document.getElementById('password').value.trim();
+    const email = document.getElementById('email').value.trim().toLowerCase();
+    const pass  = document.getElementById('password').value;
     if(!email || !pass) return toast('Preencha e-mail e senha');
+    if(email !== ACCESS_EMAIL.toLowerCase() || pass !== ACCESS_PASS){
+      return toast('Credenciais inválidas. Verifique o e-mail e a senha de acesso.');
+    }
     localStorage.setItem(STORAGE.user, JSON.stringify({email}));
     toast('Bem-vindo(a) ao Arsenal!');
     showApp();
