@@ -63,7 +63,8 @@ h1,h2,h3,.brand-title,.hero-title{
   display:inline-flex;align-items:center;justify-content:center;gap:.5rem;
   padding:.85rem 1.4rem;border-radius:999px;font-weight:700;font-size:.95rem;
   transition:transform .25s ease,box-shadow .25s ease,background .25s ease,opacity .2s;
-  white-space:nowrap;
+  white-space:nowrap;min-height:44px;
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
 }
 .btn:hover{transform:translateY(-2px)}
 .btn:active{transform:translateY(0)}
@@ -204,7 +205,12 @@ h1,h2,h3,.brand-title,.hero-title{
 }
 
 /* Content */
-.content{padding:1.4rem 1.4rem 4rem;max-width:1400px;width:100%;margin:0 auto}
+.content{
+  padding:1.4rem 1.4rem 4rem;max-width:1400px;width:100%;margin:0 auto;
+  padding-left:max(1.4rem,env(safe-area-inset-left));
+  padding-right:max(1.4rem,env(safe-area-inset-right));
+  padding-bottom:max(4rem,env(safe-area-inset-bottom));
+}
 .view{display:none;animation:fadeUp .5s ease both}
 .view.active{display:block}
 
@@ -415,6 +421,35 @@ h1,h2,h3,.brand-title,.hero-title{
   font-size:1.4rem;color:#fff;display:grid;place-items:center;
 }
 #lessonVideo,.player-shell iframe{width:100%;aspect-ratio:16/9;background:#000;display:block;border:0}
+
+/* Material PDF (dentro da área de membros) */
+.material-shell{
+  display:flex;flex-direction:column;width:min(1100px,96vw);
+  height:min(94vh,920px);max-height:94vh;overflow:hidden;
+}
+.material-header{
+  flex-shrink:0;padding:1.2rem 1.4rem .8rem;
+  border-bottom:1px solid var(--line);
+}
+.material-header h2{
+  font-family:'Nunito',sans-serif;font-size:1.25rem;font-weight:700;
+  margin:.35rem 0 0;color:var(--text);
+}
+.material-frame-wrap{
+  flex:1;min-height:0;padding:.75rem 1rem 1rem;
+  display:flex;flex-direction:column;gap:.65rem;
+}
+.material-pdf-view{
+  flex:1;width:100%;min-height:0;height:100%;
+  border:0;border-radius:var(--radius-md);background:#111;
+}
+.material-frame-wrap iframe{aspect-ratio:auto}
+.material-error{
+  color:var(--muted);font-size:.9rem;text-align:center;padding:.5rem;
+}
+.material-fallback{
+  flex-shrink:0;width:100%;text-align:center;
+}
 .player-info{padding:1.4rem}
 .player-eyebrow{color:var(--gold);font-size:.75rem;text-transform:uppercase;letter-spacing:.18rem}
 .player-info h2{font-size:1.8rem;margin:.3rem 0 .6rem}
@@ -443,19 +478,179 @@ h1,h2,h3,.brand-title,.hero-title{
 @keyframes shimmer{to{background-position:-200% 0}}
 
 /* ============= RESPONSIVO ============= */
+
+/* Backdrop sidebar mobile */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:35;opacity:0;pointer-events:none;transition:.3s}
+.scrim.show{opacity:1;pointer-events:auto}
+
+/* Tablet e mobile — layout app */
 @media (max-width:900px){
   .app{grid-template-columns:1fr}
   .sidebar{
-    position:fixed;left:0;top:0;width:280px;
+    position:fixed;left:0;top:0;width:min(300px,88vw);height:100dvh;
+    padding-top:max(1.4rem,env(safe-area-inset-top));
+    padding-bottom:max(1rem,env(safe-area-inset-bottom));
     transform:translateX(-100%);transition:transform .3s cubic-bezier(.2,.8,.2,1);
     box-shadow:var(--shadow-2);
   }
   .sidebar.open{transform:translateX(0)}
-  .app .topbar{display:flex}
-  .hero{min-height:320px;padding:1.6rem 1.2rem}
-  .content{padding:1rem 1rem 4rem}
-  .row-cards{grid-auto-columns:85%}
+  .app .topbar{
+    display:flex;
+    padding-top:max(.65rem,env(safe-area-inset-top));
+    padding-left:max(.85rem,env(safe-area-inset-left));
+    padding-right:max(.85rem,env(safe-area-inset-right));
+    gap:.5rem;
+  }
+  .topbar-brand{font-size:clamp(1.1rem,4.5vw,1.3rem);flex-shrink:0}
+  .search-wrap{
+    display:block;flex:1;min-width:0;max-width:none;
+  }
+  .search-wrap input{font-size:16px;padding:.65rem .9rem}
+  .hero{min-height:min(72vh,420px);padding:1.5rem 1.1rem}
+  .hero-title{font-size:clamp(2rem,9vw,3rem)}
+  .hero-text{font-size:clamp(.92rem,3.5vw,1.05rem)}
+  .hero-actions{flex-direction:column;width:100%}
+  .hero-actions .btn{width:100%}
+  .content{padding-top:1rem;padding-left:max(1rem,env(safe-area-inset-left));padding-right:max(1rem,env(safe-area-inset-right))}
+  .row-cards{grid-auto-columns:min(88vw,340px);gap:.85rem}
+  .section-head{flex-wrap:wrap;gap:.5rem;align-items:center}
+  .section-head h2{font-size:clamp(1.35rem,5vw,1.8rem)}
+  .stat-num{font-size:clamp(1.8rem,7vw,2.4rem)}
+  .levels{grid-template-columns:1fr}
+  .modules-grid,.lessons-grid,.dynamics-grid,.arsenal-grid,.pdfs-grid{grid-template-columns:1fr}
 }
+
+/* Mobile — expansivo em tela cheia */
+@media (max-width:767px){
+  .login-screen{padding:max(1rem,env(safe-area-inset-top)) max(1rem,env(safe-area-inset-right)) max(1rem,env(safe-area-inset-bottom)) max(1rem,env(safe-area-inset-left))}
+  .login-card{padding:1.6rem 1.2rem;max-width:100%;border-radius:var(--radius)}
+  .brand-title{font-size:clamp(1.8rem,8vw,2.2rem)}
+  .loader-mask{font-size:clamp(3rem,15vw,5rem)}
+
+  .view-head{
+    flex-direction:column;align-items:stretch;gap:.85rem;margin-bottom:1rem;
+  }
+  .view-head h1{font-size:clamp(1.65rem,8vw,2.2rem);line-height:1.05}
+  .view-sub{font-size:.88rem;margin:-.4rem 0 .8rem}
+
+  .filters{
+    flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;gap:.45rem;padding-bottom:.35rem;margin:0 -.25rem;
+    padding-left:.25rem;padding-right:.25rem;
+  }
+  .filters::-webkit-scrollbar{display:none}
+  .chip{flex-shrink:0;padding:.55rem 1rem;font-size:.8rem}
+
+  .btn{white-space:normal;line-height:1.25;padding:.75rem 1.1rem}
+  .hero-actions .btn,
+  .arsenal-actions .btn,
+  .method-actions .btn,
+  .player-actions .btn,
+  .pdf-actions .btn,
+  .soon-actions .btn,
+  .soon-card .btn{width:100%}
+
+  .arsenal-actions,
+  .method-actions,
+  .player-actions,
+  .pdf-actions,
+  .soon-actions{flex-direction:column;width:100%}
+
+  .arsenal-card{
+    grid-template-columns:1fr;gap:0;padding:0;overflow:hidden;
+  }
+  .arsenal-cover{
+    width:100%;height:clamp(100px,28vw,140px);
+    border-radius:0;border-left:none;border-right:none;
+    place-items:center;
+  }
+  .arsenal-meta{padding:1rem 1.05rem 1.15rem}
+  .arsenal-meta h3{font-size:clamp(1rem,4.2vw,1.1rem)}
+  .arsenal-meta p{font-size:.9rem}
+
+  .pdf-card{grid-template-columns:1fr;gap:0;padding:0;overflow:hidden}
+  .pdf-cover{width:100%;height:clamp(88px,24vw,120px);border-radius:0}
+  .pdf-meta{padding:1rem}
+  .pdf-actions{padding:0 1rem 1rem}
+
+  .lesson-card,.module-card,.dyn-card{width:100%}
+  .module-cover{height:clamp(120px,32vw,160px)}
+  .module-body h3{font-size:clamp(1.25rem,5vw,1.5rem)}
+
+  .soon-card{
+    grid-template-columns:1fr;text-align:center;
+    padding:1.25rem 1rem;gap:.85rem;
+  }
+  .soon-icon{margin:0 auto}
+  .soon-card .btn{margin-top:.25rem}
+
+  .ai-card{grid-template-columns:1fr;text-align:center;padding:1.4rem 1rem}
+  .ai-orb{width:100px;height:100px;margin:0 auto}
+  .ai-card h1{font-size:clamp(1.5rem,7vw,2rem)}
+  .ai-chat{height:min(70dvh,520px);margin-top:1rem}
+
+  .cert{padding:1.4rem 1rem}
+  .cert h1{font-size:clamp(1.6rem,7vw,2.2rem)}
+
+  .achievements-grid{grid-template-columns:repeat(2,1fr);gap:.65rem}
+  .achievement{padding:.95rem .7rem}
+  .achievement .icon{font-size:1.8rem}
+
+  .stats{gap:.55rem}
+  .stat{padding:.95rem .7rem}
+
+  /* Modais — tela cheia no mobile */
+  .player-modal{
+    padding:0;place-items:stretch;align-items:stretch;
+  }
+  .player-shell,
+  .material-shell{
+    width:100%;max-width:100%;min-height:100dvh;height:100dvh;max-height:100dvh;
+    border-radius:0;border-left:none;border-right:none;
+    margin:0;
+  }
+  .player-close{
+    top:max(.55rem,env(safe-area-inset-top));
+    right:max(.55rem,env(safe-area-inset-right));
+    width:44px;height:44px;
+  }
+  .method-header{padding:max(3.2rem,env(safe-area-inset-top) + 2rem) 1rem 1rem}
+  .method-header h2{font-size:clamp(1.5rem,6.5vw,1.85rem)}
+  .method-body{padding:1.2rem 1rem;gap:1.2rem}
+  .method-actions{
+    padding:1rem;padding-bottom:max(1.2rem,env(safe-area-inset-bottom));
+  }
+  .material-header{
+    padding:max(3rem,env(safe-area-inset-top) + 1.8rem) 1rem .65rem;
+  }
+  .material-header h2{font-size:clamp(1rem,4.5vw,1.15rem)}
+  .material-frame-wrap{
+    flex:1;padding:.35rem .5rem max(.5rem,env(safe-area-inset-bottom));
+  }
+  .material-pdf-view{
+    min-height:55dvh;border-radius:10px;
+  }
+  .material-fallback{
+    font-size:.88rem;padding:.7rem 1rem;
+  }
+
+  .toast{
+    left:max(1rem,env(safe-area-inset-left));
+    right:max(1rem,env(safe-area-inset-right));
+    transform:translateY(20px);width:auto;max-width:none;text-align:center;
+    bottom:max(1rem,env(safe-area-inset-bottom));
+  }
+  .toast.show{transform:translateY(0)}
+}
+
+/* Telas muito estreitas */
+@media (max-width:380px){
+  .topbar-brand{display:none}
+  .search-wrap{flex:1}
+  .stats{grid-template-columns:1fr 1fr;gap:.45rem}
+  .achievements-grid{grid-template-columns:1fr}
+}
+
 @media (min-width:600px){
   .stats{grid-template-columns:repeat(4,1fr)}
   .modules-grid{grid-template-columns:repeat(2,1fr)}
@@ -471,17 +666,6 @@ h1,h2,h3,.brand-title,.hero-title{
   .row-cards{grid-auto-columns:32%}
   .search-wrap{display:block;max-width:400px}
 }
-@media (max-width:520px){
-  .ai-card{grid-template-columns:1fr;text-align:center}
-  .ai-orb{margin:0 auto}
-  .pdf-card{grid-template-columns:64px 1fr}
-  .pdf-cover{width:64px;height:84px;font-size:1.2rem}
-  .achievements-grid{grid-template-columns:repeat(2,1fr)}
-}
-
-/* Backdrop sidebar mobile */
-.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:35;opacity:0;pointer-events:none;transition:.3s}
-.scrim.show{opacity:1;pointer-events:auto}
 
 /* ============================================================
    ADIÇÕES — Arsenal do Diretor (repositioning)
@@ -626,13 +810,6 @@ h1,h2,h3,.brand-title,.hero-title{
 @media (min-width:1100px){
   .dynamics-grid{grid-template-columns:repeat(3,1fr)}
   .arsenal-grid{grid-template-columns:repeat(2,1fr)}
-}
-@media (max-width:520px){
-  .arsenal-card{grid-template-columns:1fr}
-  .arsenal-cover{width:100%;height:100px;flex-direction:row}
-  .soon-card{grid-template-columns:1fr;text-align:center}
-  .soon-icon{margin:0 auto}
-  .method-header,.method-body,.method-actions{padding-left:1.2rem;padding-right:1.2rem}
 }
 
 /* ===== Bônus & badges adicionais ===== */

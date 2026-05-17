@@ -230,15 +230,15 @@ const DYNAMICS = DYN_RAW.map((r,i) => ({
 }));
 
 // ===== ARSENAL (materiais estratégicos / guias) =====
+// Títulos e arquivos alinhados aos PDFs em /app/pdf/
 const ARSENAL = [
-  { id:'a01', title:'Método dos 200+ Jogos Teatrais', cat:'metodo', tag:'Método', desc:'Sistema completo de aplicação prática por faixa etária.' },
-  { id:'a02', title:'Guia de Aplicação — Iniciantes', cat:'guia', tag:'Guia', desc:'Estrutura semanal pronta para os primeiros 30 dias.' },
-  { id:'a03', title:'Guia de Aplicação — Intermediário', cat:'guia', tag:'Guia', desc:'Plano de evolução para grupos já formados.' },
-  { id:'a04', title:'Repertório de Cena — Volume 1', cat:'repertorio', tag:'Repertório', desc:'Cenas curtas selecionadas para ensaios e mostras.' },
-  { id:'a05', title:'Repertório de Cena — Volume 2', cat:'repertorio', tag:'Repertório', desc:'Cenas de média complexidade com notas de direção.', premium:true },
-  { id:'a06', title:'Manual Avançado do Diretor', cat:'metodo', tag:'Método', desc:'Método completo de direção profissional.', premium:true },
-  { id:'b01', title:'Jogos de Improvisação Rápida', cat:'bonus', tag:'BÔNUS 01', desc:'30 jogos prontos de 5 a 30 minutos — aquecimento, engajamento, aprofundamento e experiências completas.', bonus:true },
-  { id:'b02', title:'30 Roteiros de Aquecimento Vocal e Corporal', cat:'bonus', tag:'BÔNUS 02', desc:'Roteiros completos para cantores, atores e professores: corporal, vocal, combinado, pré-performance e desaquecimento.', bonus:true },
+  { id:'a01', title:'Arsenal do Diretor', cat:'metodo', tag:'Método', desc:'Sistema completo de aplicação prática por faixa etária.', file:'Arsenal-do-Diretor.pdf' },
+  { id:'a02', title:'Intermediário Arsenal', cat:'guia', tag:'Guia', desc:'Estrutura semanal e métodos para o nível intermediário.', file:'Intermediario-Arsenal.pdf' },
+  { id:'a03', title:'Arsenal do Diretor — Volume 2 Intermediário', cat:'guia', tag:'Guia', desc:'Plano de evolução para grupos em nível intermediário.', file:'Arsenal-do-Diretor-Volume-2intermediario.pdf' },
+  { id:'a04', title:'Arsenal do Diretor Avançado', cat:'repertorio', tag:'Repertório', desc:'Conteúdo avançado para ensaios, cenas e mostras.', file:'Arsenal-do-Diretor-avancado.pdf' },
+  { id:'a05', title:'Arsenal do Diretor — Volume 2 Avançado', cat:'metodo', tag:'Método', desc:'Segunda etapa do método — domínio avançado da direção.', premium:true, file:'Arsenal-do-Diretor-Volume-2-avancado.pdf' },
+  { id:'b01', title:'Jogos de Improvisação Rápida', cat:'bonus', tag:'BÔNUS 01', desc:'30 jogos prontos de 5 a 30 minutos — aquecimento, engajamento, aprofundamento e experiências completas.', bonus:true, file:'Jogos-de-Improvisacao-Rapida-Bonus1.pdf' },
+  { id:'b02', title:'30 Roteiros de Aquecimento Vocal e Corporal', cat:'bonus', tag:'BÔNUS 02', desc:'Roteiros completos para cantores, atores e professores: corporal, vocal, combinado, pré-performance e desaquecimento.', bonus:true, file:'30-Roteiros-de-Aquecimento-Vocal-e-Corporal-bonus2.pdf' },
 ];
 
 const ACHIEVEMENTS = [
@@ -337,6 +337,14 @@ function initApp(){
   document.querySelectorAll('[data-close-method]').forEach(el=>{
     el.addEventListener('click', closeMethod);
   });
+  document.querySelectorAll('[data-close-material]').forEach(el=>{
+    el.addEventListener('click', closeMaterial);
+  });
+  document.addEventListener('keydown', e=>{
+    if(e.key !== 'Escape') return;
+    if(!document.getElementById('materialModal').classList.contains('hidden')) closeMaterial();
+    else if(!document.getElementById('methodModal').classList.contains('hidden')) closeMethod();
+  });
   document.getElementById('doneBtn').addEventListener('click', markDone);
   document.getElementById('favBtn').addEventListener('click', toggleFav);
   document.getElementById('nextBtn').addEventListener('click', ()=> navDynamic(1));
@@ -373,6 +381,7 @@ function showApp(){
   document.getElementById('app').classList.remove('hidden');
 }
 function switchView(name){
+  closeSidebar();
   document.querySelectorAll('[data-view-section]').forEach(s=>s.classList.remove('active'));
   const target = document.querySelector(`[data-view-section="${name}"]`);
   if(target) target.classList.add('active');
@@ -538,17 +547,13 @@ function renderArsenal(filter){
     </article>`).join('');
   wrap.querySelectorAll('[data-ars-access]').forEach(el=>{
     el.addEventListener('click', ()=>{
-      const id = el.dataset.arsAccess;
-      if(!progress.pdfs.includes(id)){
-        progress.pdfs.push(id);
-        saveProgress(progress);
-        checkAchievements();
+      if(openArsenalMaterial(el.dataset.arsAccess)){
+        toast('Material liberado ✓');
       }
-      toast('Material liberado ✓');
     });
   });
   wrap.querySelectorAll('[data-ars-open]').forEach(el=>{
-    el.addEventListener('click', ()=> toast('Abrindo material estratégico...'));
+    el.addEventListener('click', ()=> openArsenalMaterial(el.dataset.arsOpen));
   });
 }
 
@@ -695,6 +700,85 @@ function generateAIResponse(q){
   return 'Posso te ajudar com dinâmicas, métodos de direção, planos de aula, exercícios vocais ou corporais. Pergunte algo mais específico!';
 }
 function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+// ===== MATERIAIS (PDF) =====
+function arsenalPdfHref(file){
+  const segments = file.split('/').map(encodeURIComponent).join('/');
+  const script = document.querySelector('script[src*="script.js"]');
+  const base = script?.src || new URL('.', window.location.href).href;
+  return new URL('pdf/' + segments, base).href;
+}
+
+function isMobilePdfViewer(){
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+function resetMaterialViewer(){
+  const embed = document.getElementById('materialEmbed');
+  const frame = document.getElementById('materialFrame');
+  const err = document.getElementById('materialError');
+  const fallback = document.getElementById('materialFallback');
+  embed.src = '';
+  frame.src = '';
+  embed.classList.add('hidden');
+  frame.classList.add('hidden');
+  err.classList.add('hidden');
+  fallback.classList.add('hidden');
+}
+
+function showMaterialPdf(url){
+  const embed = document.getElementById('materialEmbed');
+  const frame = document.getElementById('materialFrame');
+  const err = document.getElementById('materialError');
+  const fallback = document.getElementById('materialFallback');
+  resetMaterialViewer();
+  fallback.href = url;
+
+  fetch(url, { method:'HEAD', cache:'no-store' }).then(res=>{
+    if(!res.ok){
+      err.textContent = 'Material não encontrado. Atualize a página e tente de novo.';
+      err.classList.remove('hidden');
+      fallback.classList.remove('hidden');
+      return;
+    }
+    fallback.classList.remove('hidden');
+    const useEmbed = isMobilePdfViewer();
+    const viewer = useEmbed ? embed : frame;
+    viewer.classList.remove('hidden');
+    viewer.src = url;
+  }).catch(()=>{
+    fallback.classList.remove('hidden');
+    const useEmbed = isMobilePdfViewer();
+    const viewer = useEmbed ? embed : frame;
+    viewer.classList.remove('hidden');
+    viewer.src = url;
+  });
+}
+
+function openArsenalMaterial(id){
+  const item = ARSENAL.find(p => p.id === id);
+  if(!item?.file){
+    toast('Material indisponível no momento.');
+    return false;
+  }
+  if(!progress.pdfs.includes(id)){
+    progress.pdfs.push(id);
+    saveProgress(progress);
+    checkAchievements();
+  }
+  document.getElementById('materialTitle').textContent = item.title;
+  showMaterialPdf(arsenalPdfHref(item.file));
+  document.getElementById('materialModal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  return true;
+}
+
+function closeMaterial(){
+  resetMaterialViewer();
+  document.getElementById('materialModal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
 
 // ===== TOAST =====
 let toastTimer;

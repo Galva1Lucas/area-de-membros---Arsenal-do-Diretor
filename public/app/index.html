@@ -25,7 +25,9 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=5" />
+  <meta name="theme-color" content="#0a0a0c" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <title>Arsenal do Diretor — Dinâmicas de Teatro</title>
   <meta name="description" content="Sistema profissional de métodos, dinâmicas e guias de aplicação para diretores e professores de teatro." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -338,6 +340,24 @@
       <button id="doneBtn" class="btn btn-outline">✓ Marcar concluída</button>
       <button id="prevBtn" class="btn btn-ghost">← Anterior</button>
       <button id="nextBtn" class="btn btn-gold">Próxima →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============== VISUALIZADOR DE MATERIAL (PDF) ============== -->
+<div id="materialModal" class="player-modal hidden">
+  <div class="player-backdrop" data-close-material></div>
+  <div class="player-shell material-shell">
+    <button class="player-close" data-close-material aria-label="Fechar material">×</button>
+    <div class="material-header">
+      <span class="player-eyebrow">Material estratégico</span>
+      <h2 id="materialTitle">Guia</h2>
+    </div>
+    <div class="material-frame-wrap">
+      <embed id="materialEmbed" class="material-pdf-view hidden" type="application/pdf" />
+      <iframe id="materialFrame" class="material-pdf-view hidden" title="Visualização do material"></iframe>
+      <p id="materialError" class="material-error hidden">Não foi possível carregar o material aqui.</p>
+      <a id="materialFallback" class="btn btn-gold material-fallback hidden" href="#" target="_blank" rel="noopener noreferrer">Abrir PDF no navegador</a>
     </div>
   </div>
 </div>
