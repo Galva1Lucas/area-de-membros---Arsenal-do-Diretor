@@ -520,17 +520,19 @@ function renderArsenal(filter){
   const wrap = document.getElementById('arsenalGrid');
   const list = filter==='all' ? ARSENAL : ARSENAL.filter(p=>p.cat===filter);
   wrap.innerHTML = list.map(p=>`
-    <article class="arsenal-card">
-      <div class="arsenal-cover">
+    <article class="arsenal-card ${p.bonus?'is-bonus':''}">
+      <div class="arsenal-cover ${p.bonus?'cover-bonus':''}">
         <span class="arsenal-tag">${p.tag}</span>
+        ${p.bonus?'<span class="bonus-ribbon">★ BÔNUS EXCLUSIVO</span>':''}
       </div>
       <div class="arsenal-meta">
         ${p.premium?'<span class="badge-premium">AVANÇADO</span>':''}
+        ${p.bonus?'<span class="badge-bonus">CONTEÚDO BÔNUS</span>':''}
         <h3>${p.title}</h3>
         <p>${p.desc}</p>
         <div class="arsenal-actions">
           <button class="btn btn-outline" data-ars-open="${p.id}">Abrir</button>
-          <button class="btn btn-gold" data-ars-access="${p.id}">Acessar Material</button>
+          <button class="btn btn-gold" data-ars-access="${p.id}">${p.bonus?'Acessar Bônus':'Acessar Material'}</button>
         </div>
       </div>
     </article>`).join('');
